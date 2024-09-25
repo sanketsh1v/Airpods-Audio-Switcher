@@ -1,22 +1,30 @@
-import asyncio
-from bleak import BleakScanner
+import wmi
 
-async def check_airpods_connected():
+def check_airpods_connected():
     """
-    Check if Space Pods Pro are connected via Bluetooth.
+    Check if Space Pods Pro are connected using WMI to query Bluetooth devices.
     """
-    devices = await BleakScanner.discover()
-    print("Detected devices:")
-    for device in devices:
-        # Print the name of each device discovered
-        print(f"Device: {device.name}")
-        if device.name and "Space Pods Pro" in device.name:
-            return True
-    return False
+    try:
+        # Create WMI instance
+        wmi_service = wmi.WMI()
+        
+        # Query for Bluetooth devices (you might need to adjust this query depending on your system)
+        devices = wmi_service.Win32_PnPEntity()
+        
+        for device in devices:
+            # Check if the device has "Space Pods Pro" in the name
+            if device.Name and "Space Pods Pro" in device.Name:
+                print(f"Detected device: {device.Name}")
+                return True
+
+        return False
+
+    except Exception as e:
+        print(f"Error checking for Space Pods Pro: {e}")
+        return False
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    if loop.run_until_complete(check_airpods_connected()):
+    if check_airpods_connected():
         print("Space Pods Pro connected!")
     else:
         print("Space Pods Pro not connected.")
